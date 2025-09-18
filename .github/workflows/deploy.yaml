@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build the server
 
 on:
     push:
@@ -34,3 +34,4 @@ jobs:
                   tags: |
                       ghcr.io/${{ github.repository_owner }}/theantlers-backend:latest
                       ghcr.io/${{ github.repository_owner }}/theantlers-backend:${{ github.sha }}
+
