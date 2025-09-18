@@ -31,8 +31,7 @@ jobs:
             - name: Extract metadata (tags, labels)
               id: meta
               uses: docker/metadata-action@v5
-              with:
-                  images: ghcr.io/${{ github.repository_owner }}/theantlers-backend
+              with:                  images: ghcr.io/${{ github.repository_owner }}/antlers
                   tags: |
                       type=raw,value=latest
                       type=sha
