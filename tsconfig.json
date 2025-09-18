@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "incremental": true,
+        "target": "ES2019",
+        "module": "NodeNext",
+        "declaration": true,
+        "sourceMap": true,
+        "composite": true,
+        "strict": true,
+        "moduleResolution": "NodeNext",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "rootDir": ".",
+        "outDir": "build",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "resolveJsonModule": true
+    },
+    "exclude": ["node_modules"],
+    "include": ["src/**/*.ts", "app.ts", "index.d.ts"]
+}

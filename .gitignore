@@ -1,0 +1,57 @@
+# Dependency directories
+node_modules/
+package-lock.json
+
+# Out directories
+build/
+dist/
+
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+.DS_Store
+*.swp
+*.lock
+heapdump
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.dist
+
+# supabae
+supabase/
