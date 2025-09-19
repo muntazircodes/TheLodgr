@@ -1,9 +1,12 @@
+///<reference path="../types/express.d.ts" />
+
 import { Request, Response, Router } from 'express';
-import { UserService } from '../services/user.service';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { UserService } from '../services/user.service';
+
+const userService = new UserService();
 
 const router = Router();
-const userService = new UserService();
 
 /**
  *  @method             GET
@@ -113,7 +116,7 @@ router.patch('/:userId', [authMiddleware], async (req: Request, res: Response) =
  *  @access             private
  */
 
-router.delete(':/userId', [authMiddleware], async (req: Request, res: Response) => {
+router.delete('/:userId', [authMiddleware], async (req: Request, res: Response) => {
     const { userId } = req.params;
     const userProfile = userService.delete({ userId });
     res.send(userProfile);

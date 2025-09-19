@@ -1,7 +1,6 @@
-import { NotFoundError } from '@hyperflake/http-errors';
+import { BadRequestError, NotFoundError } from '@hyperflake/http-errors';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getDB } from '../configuration/database.config';
-import { IUser } from '../interfaces/user.inteface';
 
 export class UserService {
     private get db(): SupabaseClient {
@@ -12,7 +11,8 @@ export class UserService {
      * @desc Create the profile for user
      */
     async getAllUsers() {
-        const { data } = await this.db.from('userProfiles').select('*');
+        const { data, error } = await this.db.from('user_profiles').select('*');
+        if (error) throw new BadRequestError(error.message);
         return { data };
     }
 
@@ -22,9 +22,9 @@ export class UserService {
     async getById(params: { userId: string }) {
         const { userId } = params;
 
-        const { data, error } = await this.db.from('userProfiles').select('*').eq('id', userId).single();
-
-        return { data, error };
+        const { data, error } = await this.db.from('user_profiles').select('*').eq('id', userId).single();
+        if (error) throw new NotFoundError(error.message);
+        return { data };
     }
 
     /**
@@ -64,7 +64,7 @@ export class UserService {
         }
 
         const { data, error } = await this.db
-            .from('userProfiles')
+            .from('user_profiles')
             .insert([
                 {
                     id,
@@ -84,10 +84,8 @@ export class UserService {
             .select()
             .single();
 
-        return {
-            data,
-            error,
-        };
+        if (error) throw new BadRequestError(error.message);
+        return { data };
     }
 
     /**
@@ -128,7 +126,7 @@ export class UserService {
         await this.getByIdOrThrow({ userId: id });
 
         const { data, error } = await this.db
-            .from('userProfiles')
+            .from('user_profiles')
             .update({
                 name,
                 profile,
@@ -146,10 +144,8 @@ export class UserService {
             .select()
             .single();
 
-        return {
-            data,
-            error,
-        };
+        if (error) throw new BadRequestError(error.message);
+        return { data };
     }
 
     /**
@@ -160,8 +156,8 @@ export class UserService {
 
         await this.getByIdOrThrow({ userId });
 
-        const { data } = await this.db.from('userProfiles').delete().eq('id', userId).select().single();
-
+        const { data, error } = await this.db.from('user_profiles').delete().eq('id', userId).select().single();
+        if (error) throw new BadRequestError(error.message);
         return data;
     }
 
@@ -171,11 +167,10 @@ export class UserService {
     private async getByIdOrThrow(params: { userId: string }) {
         const { userId } = params;
 
-        const { data, error } = await this.db.from('userProfiles').select('*').eq('id', userId).single();
+        const { data, error } = await this.db.from('user_profiles').select('id').eq('id', userId).single();
 
-        if (error || !data) {
-            throw new NotFoundError(`User with ID ${userId} not found`);
-        }
+        if (error) throw new BadRequestError(error.message);
+        if (!data) throw new NotFoundError(`User with ID ${userId} not found`);
 
         return data;
     }
