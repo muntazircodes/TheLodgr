@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import { Response, Router } from 'express';
 
 const router = Router();
 
@@ -7,7 +7,7 @@ const router = Router();
  *  @description        the health endpoint check
  *  @access             public
  */
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (res: Response) => {
     res.sendStatus(200);
 });
 

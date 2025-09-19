@@ -9,7 +9,6 @@ export class AuthService {
 
     /**
      * @desc Sign up a new user (email confirmation flow depends on project settings)
-     * .
      */
     async signUp(params: { email: string; password: string; name?: string; phone?: string }) {
         const { email, password, name, phone } = params;

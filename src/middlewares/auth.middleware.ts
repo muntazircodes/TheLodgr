@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import { NextFunction, Request, Response } from 'express';
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const url = process.env.SUPABASE_URL!;
@@ -20,7 +20,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const { data, error } = await supabase.auth.getUser(token); //[3]
     if (error || !data.user) return res.status(401).json({ error: 'Invalid or expired token' });
 
-    (req as any).supabase = supabase;
-    (req as any).user = data.user;
+    req.supabase = supabase;
+    req.user = data.user;
     next();
 };
