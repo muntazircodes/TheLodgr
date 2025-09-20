@@ -7,7 +7,7 @@ const router = Router();
  *  @description        the health endpoint check
  *  @access             public
  */
-router.get('/',(req: Request, res: Response) => {
+router.get('/', (req: Request, res: Response) => {
     res.sendStatus(200);
 });
 
