@@ -9,5 +9,5 @@ export const initRouter = (app: Express) => {
     app.use('/api/v1/health', healthRoutes);
     app.use('/api/auth', authRoutes);
     app.use('/api/v1/users', userProfileRoutes);
-    app.use('/api/v1/destionations', destionRoutes);
+    app.use('/api/v1/destinations', destionRoutes);
 };
