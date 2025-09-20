@@ -7,73 +7,58 @@ const destinationService = new DestinationService();
 
 /**
  *  @method             GET
- *  @description        GET all destinations
- *  @access             private
+ *  @description        Get all destinations
+ *  @access             protected
  */
-router.get('/', [authMiddleware], async (req: Request, res: Response) => {
-    const { data } = await destinationService.getAllDestinations();
-    res.send(data);
+router.get('/', authMiddleware, async (req: Request, res: Response) => {
+    const destinations = await destinationService.getAll();
+    res.json(destinations);
 });
 
 /**
  *  @method             POST
- *  @description        Create new destination
- *  @access             private
+ *  @description        Create a new destination
+ *  @access             protected
  */
-router.post('/', [authMiddleware], async (req: Request, res: Response) => {
-    const { name, slug, area, center, metadata } = req.body;
-
-    const { data } = await destinationService.create({
-        name,
-        slug,
-        area,
-        center,
-        metadata,
-    });
-
-    res.send(data);
+router.post('/', authMiddleware, async (req: Request, res: Response) => {
+    const { name, slug, area, metadata } = req.body;
+    const destination = await destinationService.create({ name, slug, area, metadata });
+    res.json(destination);
 });
 
 /**
  *  @method             GET
- *  @description        GET the destination by ID
- *  @access             private
+ *  @description        Get a destination by ID
+ *  @access             protected
  */
-router.get('/:destinationId', [authMiddleware], async (req: Request, res: Response) => {
+router.get('/:destinationId', authMiddleware, async (req: Request, res: Response) => {
     const { destinationId } = req.params;
-    const { data } = await destinationService.getById({ destinationId });
-    res.send(data);
+    const destination = await destinationService.getById(destinationId);
+    res.json(destination);
 });
 
 /**
  *  @method             PATCH
- *  @description        Update the existing destination
- *  @access             private
+ *  @description        Update a destination by ID
+ *  @access             protected
  */
-router.patch('/:destinationId', [authMiddleware], async (req: Request, res: Response) => {
+router.patch('/:destinationId', authMiddleware, async (req: Request, res: Response) => {
     const { destinationId } = req.params;
-    const { name, slug, area, center, metadata } = req.body;
+    const { name, slug, area, metadata } = req.body;
 
-    const { data } = await destinationService.update({
-        id: destinationId,
-        name,
-        slug,
-        area,
-        center,
-        metadata,
-    });
-    res.send(data);
+    const destination = await destinationService.update(destinationId, { name, slug, area, metadata });
+    res.json(destination);
 });
 
 /**
  *  @method             DELETE
- *  @description        Delete the existing destination
- *  @access             private
+ *  @description        Delete a destination by ID
+ *  @access             protected
  */
-router.delete('/:destinationId', [authMiddleware], async (req: Request, res: Response) => {
+router.delete('/:destinationId', authMiddleware, async (req: Request, res: Response) => {
     const { destinationId } = req.params;
-    const data = await destinationService.delete({ destinationId });
-    res.send(data);
+    const destination = await destinationService.delete(destinationId);
+    res.json(destination);
 });
 
 export default router;
