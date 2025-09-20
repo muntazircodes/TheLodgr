@@ -40,7 +40,11 @@ A clean, type-safe Node.js/Express backend powered by Supabase (Postgres) for da
     - Returns tokens for subsequent requests.
 - **Users:** CRUD for user profiles (name, profile, Aadhaar, address, phone, altPhone, etc.).
 - **Destinations:** CRUD and linkage to weather and POIs by `destinationId`.
-- **Weather:** `GET /destinations/:id/weather` for current and forecast data by coordinates/IDs.
+- **Weather:**
+    - `GET /destinations/:id/weather` for current and forecast data by coordinates/IDs.
+    - `GET /api/v1/weather/destination/:id` for weather data.
+    - `POST /api/v1/weather/destination/:id/update` to manually trigger weather updates.
+    - `GET /api/v1/weather/destination/:id/date/:date` for historical weather data.
 - **POIs:** `GET /destinations/:id/pois` via provider integration.
 
 ---

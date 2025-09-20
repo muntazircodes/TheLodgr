@@ -12,7 +12,7 @@ const destinationService = new DestinationService();
  */
 router.get('/', [authMiddleware], async (req: Request, res: Response) => {
     const destinations = await destinationService.getAll();
-    res.json(destinations);
+    res.send(destinations);
 });
 
 /**
@@ -23,7 +23,7 @@ router.get('/', [authMiddleware], async (req: Request, res: Response) => {
 router.post('/', [authMiddleware], async (req: Request, res: Response) => {
     const { name, slug, area, metadata } = req.body;
     const destination = await destinationService.create({ name, slug, area, metadata });
-    res.json(destination);
+    res.send(destination);
 });
 
 /**
@@ -34,7 +34,7 @@ router.post('/', [authMiddleware], async (req: Request, res: Response) => {
 router.get('/:destinationId', [authMiddleware], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
     const destination = await destinationService.getById(destinationId);
-    res.json(destination);
+    res.send(destination);
 });
 
 /**
@@ -47,7 +47,7 @@ router.patch('/:destinationId', [authMiddleware], async (req: Request, res: Resp
     const { name, slug, area, metadata } = req.body;
 
     const destination = await destinationService.update(destinationId, { name, slug, area, metadata });
-    res.json(destination);
+    res.send(destination);
 });
 
 /**
@@ -58,7 +58,7 @@ router.patch('/:destinationId', [authMiddleware], async (req: Request, res: Resp
 router.delete('/:destinationId', [authMiddleware], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
     const destination = await destinationService.delete(destinationId);
-    res.json(destination);
+    res.send(destination);
 });
 
 export default router;
