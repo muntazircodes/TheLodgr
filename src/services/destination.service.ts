@@ -76,12 +76,10 @@ export class DestinationService {
      * @desc Delete a destination
      */
 
-    async delete(destinationId: string): Promise<IDestination> {
-        await this.getById(destinationId);
-
+    async delete(destinationId: string) {
         const { data, error } = await this.db.from('destinations').delete().eq('id', destinationId).select().single();
 
         if (error || !data) throw new BadRequestError(error!.message);
-        return mapDbRowToDestination(data as IDBDestinationRow);
+        return;
     }
 }
