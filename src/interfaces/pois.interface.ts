@@ -31,3 +31,13 @@ export interface IPoi {
     average_rating?: number;
     total_ratings?: number;
 }
+
+export interface IPoiRating {
+    id?: string;
+    poi_id: string;
+    user_id: string;
+    rating: number;
+    review: string;
+    images?: any;
+    visit_date: string;
+}
