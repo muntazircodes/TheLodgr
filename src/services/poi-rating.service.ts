@@ -11,7 +11,7 @@ export class PoiRatingService {
     /**
      * @desc Get all the ratings of a POI
      */
-    async getAllRatings(params: { poiId: string }) {
+    async getAllRatings(params: { poiId: string }): Promise<IPoiRating[]> {
         const { poiId } = params;
         const { data, error } = await this.db.from('poi_ratings').select('*').eq('poi_id', poiId);
         if (error) throw new BadRequestError(error.message);
@@ -21,7 +21,7 @@ export class PoiRatingService {
     /**
      * @desc Get the rating of a POI by its rating ID
      */
-    async getById(params: { ratingId: string }) {
+    async getById(params: { ratingId: string }): Promise<IPoiRating> {
         const { ratingId } = params;
         const { data, error } = await this.db.from('poi_ratings').select('*').eq('id', ratingId).single();
         if (error) throw new BadRequestError(error.message);
