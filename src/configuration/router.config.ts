@@ -7,6 +7,7 @@ import userProfileRoutes from '../routes/user.routes';
 import weatherRoutes from '../routes/weather.routes';
 import poiRoutes from '../routes/poi.routes';
 import poiRatingRoutes from '../routes/poi-rating.routes';
+import poiWishlistRoutes from '../routes/poi-wishist.routes';
 import poiCategoryRoutes from '../routes/poi-catergory.routes';
 
 export const initRouter = (app: Express) => {
@@ -17,5 +18,6 @@ export const initRouter = (app: Express) => {
     app.use('/api/v1/destination/:destinationId/weather', weatherRoutes);
     app.use('/api/v1/destinations/:destinationId/pois', poiRoutes);
     app.use('/api/v1/destinations/:destinationId/pois/:poiId/ratings', poiRatingRoutes);
+    app.use('/api/v1/destinations/:destinationId/pois/:poiId/wishlist', poiWishlistRoutes);
     app.use('/api/v1/poi-categories', poiCategoryRoutes);
 };

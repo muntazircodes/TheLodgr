@@ -41,3 +41,9 @@ export interface IPoiRating {
     images?: any;
     visit_date: string;
 }
+
+export interface IPoiWishlist {
+    id?: string;
+    user_id: string;
+    poi_id: string;
+}
