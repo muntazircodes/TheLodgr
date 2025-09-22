@@ -8,7 +8,7 @@ export class UserService {
     }
 
     /**
-     * @desc Create the profile for user
+     * @desc Get the profile for user
      */
     async getAllUsers() {
         const { data, error } = await this.db.from('user_profiles').select('*');
