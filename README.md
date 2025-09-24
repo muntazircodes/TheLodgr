@@ -1,173 +1,167 @@
-# Project Antlers
+# The Logdr - Backend
 
-A clean, type-safe Node.js/Express backend powered by Supabase (Postgres) for data storage, token-based authentication, and a straightforward domain model focused on destinations, weather integration, and points of interest. Designed for simple deployments (Render/Vercel) and CI via GitHub Workflows.
-
----
-
-## Features
-
-- **Express API** with modular routing and services, keeping business logic clean and handlers minimal.
-- **Supabase Postgres** for persistence, using a standalone User table (separate from Supabase Auth).
-- **Token-based authentication middleware** for protected routes and a dedicated AuthService for signup/login.
-- **Weather API integration** linked to destination IDs, plus POI (Points of Interest) flow.
-- **Production-ready configuration** for Vercel/Render and GitHub Actions CI.
+A type-safe Node.js/Express backend powered by Supabase (Postgres) that models destinations, weather forecasting, users, and points of interest (POIs). It emphasizes clean separation between routing, services, and data access, and includes a scheduler for periodic weather snapshots.
 
 ---
 
-## Tech Stack
+## Overview
 
-- **Node.js, TypeScript, Express** for HTTP server and routing.
-- **Supabase JS client** for Postgres access and service key management.
-- **Postgres schema** managed via SQL migrations (Supabase CLI workflow).
-- **dotenv** for environment configuration and **nodemon** for development.
+- **Domain**: Destinations with geo boundaries and centers; user profiles; POIs within destinations; daily/hourly weather snapshots per destination.
+- **Persistence**: Supabase Postgres with SQL migrations managed via Supabase CLI (see `supabase/migrations`).
+- **Auth**: Supabase Auth for signup/login; a Bearer-token `authMiddleware` protects private routes.
+- **Weather**: Tomorrow.io provider for forecasts; results normalized and stored as snapshots.
+- **POIs**: CRUD for POIs linked to destinations, with categories, ratings, and wishlists (foundation present).
+- **DX**: TypeScript, modular routes/services, structured error handling, environment-based configuration.
+
+Scope note: This README documents everything up to POIs. It intentionally omits Price and Package services which are not implemented yet.
 
 ---
 
 ## Architecture
 
-- **Routes:** Thin controllers that map HTTP requests to services and return typed responses.
-- **Services:** Encapsulate domain logic for authentication, users, destinations, weather, and POIs.
-- **Data:** Centralized Supabase client module with typed access and error normalization.
-- **Auth:** Token verification middleware and AuthService for signup/login with strict checks.
+- **Bootstrap (`src/bootstrap/app.bootstrap.ts`)**
+    - Configures Express (CORS, JSON body parsing, URL-encoded, logging via `morgan`).
+    - Initializes Supabase clients: app (anon) and admin (service role) via `database.config` and `database-admin.config`.
+    - Registers routes through `initRouter` and attaches a centralized `errorHandler`.
+    - Starts `WeatherScheduler` for periodic weather updates.
+
+- **Routing (`src/configuration/router.config.ts` and `src/routes/*`)**
+    - Router mounts feature modules: health, auth, users, destinations, weather (scoped by destination), and POIs (scoped by destination). Ratings, wishlists, and categories routes exist for POI adjunct data.
+    - Route handlers are thin. They parse inputs, call services, and return results.
+
+- **Services (`src/services/*`)**
+    - Encapsulate business logic and DB access via Supabase client (`getDB()`).
+    - Throw typed HTTP errors (`@hyperflake/http-errors`) that are normalized by the error middleware.
+
+- **Data Access (`src/configuration/database.config.ts`)**
+    - Provides a singleton Supabase client (anon) for application queries.
+    - Admin client (`database-admin.config.ts`) is initialized for privileged operations (not directly used in handlers).
+
+- **Auth (`src/middlewares/auth.middleware.ts`, `src/services/auth.service.ts`)**
+    - Signup/login handled via Supabase Auth.
+    - Middleware validates Bearer tokens, attaches `req.supabase` and `req.user`.
+
+- **Utilities**
+    - `weather.scheduler.ts`: cron-based periodic fetch and snapshot of weather.
+    - `destination.helper.ts`: mapping and GeoJSON normalization for destinations.
+    - `weather.mapper.ts`: transforms Tomorrow.io payloads to the internal forecast shape.
+
+- **Interfaces (`src/interfaces/*`)**
+    - Strongly-typed DTOs and domain models for destinations, weather snapshots, POIs, and related entities.
 
 ---
 
-## API Overview
+## Core Domain Models
 
-- **Auth:**
-    - `POST /auth/signup`
-    - `POST /auth/login`
-    - Returns tokens for subsequent requests.
-- **Users:** CRUD for user profiles (name, profile, Aadhaar, address, phone, altPhone, etc.).
-- **Destinations:** CRUD and linkage to weather and POIs by `destinationId`.
-- **Weather:**
-    - `GET /destinations/:id/weather` for current and forecast data by coordinates/IDs.
-    - `GET /api/v1/weather/destination/:id` for weather data.
-    - `POST /api/v1/weather/destination/:id/update` to manually trigger weather updates.
-    - `GET /api/v1/weather/destination/:id/date/:date` for historical weather data.
-- **POIs:** `GET /destinations/:id/pois` via provider integration.
+- **Destination**
+    - Fields: `id`, `name`, `slug`, `area` (GeoJSON MultiPolygon), `center` (lat/lng), `metadata`, `createdAt`, `updatedAt`.
+    - Mapping converts DB snake_case rows into a typed domain model and normalizes polygons.
 
----
+- **User Profile**
+    - Persisted in `user_profiles` with personal, address, and contact details keyed by `id` (Supabase user id).
 
-## Getting Started
+- **Weather Snapshot**
+    - Linked to a destination via `destination_id` and a `snapshot_date` (YYYY-MM-DD).
+    - Stores `mapped.hourly` and `mapped.daily` arrays with an `is_final` flag.
 
-### Prerequisites
-
-- Node.js 22 or higher
-- Supabase project URL and service role key
-
-### Installation
-
-## Auth
-
-- **Signup:** Validates profile fields, creates a user row, and returns a token.
-- **Login:** Verifies credentials or OTP/token strategy and issues a short-lived token.
-- **Middleware:** Checks Bearer token and attaches the principal to the request.
+- **POI**
+    - Linked to destination via `destination_id` and to a category via `category_id`.
+    - Contains geospatial position, descriptive content, media, zoom preferences, and activation flags.
 
 ---
 
-## Destinations & Weather
+## Request Flow & Workflows
 
-- Destinations include latitude and longitude.
-- The `WeatherService` fetches weather data by coordinates keyed from `destinationId`.
-- The separation of concerns keeps the weather provider swap-friendly and testable.
+- **Authentication Flow**
+    - Client signs up/logs in using Supabase Auth via service methods.
+    - Client includes `Authorization: Bearer <access_token>` on protected requests.
+    - Middleware verifies the token, loads the user, and continues the pipeline.
+
+- **Destination Workflow**
+    - Create destinations with `name`, `slug`, `area`, and optional `metadata`.
+    - Service maps DB rows to the domain model, ensuring `area` is always a MultiPolygon and `center` resolves from columns or GeoJSON.
+
+- **Weather Workflow**
+    - `WeatherService.fetchAndStoreForDestination(destinationId, isFinal?)` resolves a destination’s `center_lat/center_lng`.
+    - Fetches hourly/daily from Tomorrow.io; maps provider payloads via `WeatherMapper`.
+    - Upserts into `weather_snapshots` as `{ hourly, daily, is_final }` for the `snapshot_date`.
+    - `getStoredForecast(destinationId)` reads the latest snapshot (no live API calls in read path).
+
+- **Scheduled Weather Updates**
+    - `WeatherScheduler.start()` registers two cron jobs:
+        - Every 3 hours at minute 0 for rolling updates.
+        - Final daily snapshot at 23:59.
+    - For each destination, the scheduler calls `fetchAndStoreForDestination` in parallel and logs outcomes.
+
+- **POI Workflow**
+    - Create/update/delete POIs scoped to a `destination_id`.
+    - Read operations filter by `destination_id` or `(destination_id, poiId)`.
+    - Categories, ratings, and wishlists are structured as separate resources tied to POIs (foundations are present in routes and interfaces).
 
 ---
 
-## Points of Interest (POIs)
+## Configuration & Environment
 
-- `POIService` queries by `destinationId` and normalizes provider payloads to a stable contract.
-- Caching can be added at the service boundary for performance.
+Set the following environment variables (locally via `.env`, or platform secrets):
+
+- `PORT` (default: `4500`)
+- `CORS_ORIGINS` (comma-separated list or `*`)
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `TOMORROW_API_KEY` (Tomorrow.io)
 
 ---
 
 ## Local Development
 
-- Run Supabase locally or point to a hosted project; configure the service key in `.env`.
-- Use a REST client or Postman collections to test routes with tokens.
+- Install dependencies and build:
+    - `npm install`
+    - `npm run build` or `npm run dev` (if configured)
+- Ensure Supabase is reachable (local or hosted) and the above env vars are set.
+- Apply migrations with Supabase CLI or deploy to your Supabase project using the migrations in `supabase/migrations`.
+- Start the server: `npm start`.
 
 ---
 
-## Deployment
+## Database & Migrations
 
-- **Render:** Deploy as a Node service with:
-    - **Build Command:** `npm run build`
-    - **Start Command:** `npm start`
-    - Set environment variables in the dashboard.
-- **Vercel:** Deploy as a server runtime. Ensure API routes or custom server config and environment variables are set. Avoid platform features incompatible with long-lived processes.
-- **Supabase Edge Functions:** These are Deno-based; Express apps do not deploy directly here.
-
----
-
-## CI/CD
-
-- **GitHub Actions:**
-    - Matrix for Node versions.
-    - Install, build, and run unit tests.
-    - Optionally run `supabase db diff/push` against staging before deploy.
-    - Deploy via Render or Vercel CLIs with secrets in GitHub.
+- Migrations live under `supabase/migrations`. Relevant schemas include:
+    - `user_profiles`
+    - `destinations` (with `center_lat`, `center_lng`, `area`, `metadata`)
+    - `weather_snapshots`
+    - `pois` and adjunct tables for categories/ratings/wishlists
+- Adjust or add migrations as the domain evolves.
 
 ---
 
-## Scripts
+## Error Handling
 
-| Script      | Description            |
-| ----------- | ---------------------- |
-| `dev`       | `nodemon src/index.ts` |
-| `build`     | `tsc`                  |
-| `start`     | `node dist/index.js`   |
-| `lint/test` | Optional project setup |
+- Services throw `BadRequestError`, `NotFoundError`, or `UnauthorizedError` from `@hyperflake/http-errors`.
+- The centralized error handler converts these into consistent HTTP responses.
 
 ---
 
-## Conventions
+## Deployment Notes
 
-- Type-safe DTOs at the route boundary; services work with domain types.
-- No `try/catch` in services; errors bubble up and are normalized by error middleware.
-- Explicit return contracts per route for stable client integration.
-
----
-
-## Scalability & Roadmap
-
-Project Antlers is architected for incremental scaling. The service boundaries make it straightforward to add:
-
-- Additional integrations (e.g., transport, booking, payments)
-- Advanced analytics pipelines on top of user/destination data
-- Microservice decomposition for high-traffic workloads (auth, weather, POIs as separate services)
-- Event-driven flows (queue or Pub/Sub) for async operations like weather refresh or POI sync
-- Multi-tenant support with schema separation or row-level security
-
-This ensures the current design remains production-ready today while being extensible for enterprise-grade growth tomorrow.
+- Build with `npm run build` and start with `npm start`.
+- Provide runtime env vars through your platform (Render, Vercel, etc.).
+- Avoid exposing the service role key to clients; store secrets server-side only.
 
 ---
 
-## Security
+## Contributing
 
-- Service role key is kept server-side only and never exposed to clients.
-- JWT tokens are short-lived with a rotation strategy; store secrets in environment variables or platform secret stores.
-- Input validation and content-type checks are enforced at the route layer.
-
----
-
-## Troubleshooting
-
-- **401 on protected routes:** Confirm Bearer token is present and not expired.
-- **Database errors:** Verify `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and table names/migrations.
-- **Weather failures:** Ensure `WEATHER_API_KEY` is set and that the destination has coordinates.
+- Keep route handlers thin and put domain logic in services.
+- Maintain type safety across interfaces and data mappers.
+- Prefer incremental, focused PRs; update migrations and README when schemas change.
 
 ---
 
-## License
+## Roadmap (Immediate Scope)
 
-MIT unless otherwise noted in the repository.
+- Harden POI adjunct flows (categories, ratings, wishlist) and validations.
+- Expand test coverage on services and mappers.
+- Add caching and pagination where appropriate.
 
----
-
-## Acknowledgements
-
-Thanks to the Supabase and Express ecosystems for robust tooling that keeps the stack simple and scalable.
-
-```
-
-```
+Note: Price and Package services are intentionally out of scope for now.
