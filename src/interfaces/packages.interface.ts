@@ -45,5 +45,3 @@ export interface IPackageQuote {
     description?: string;
     breakdown: IPackageBreakdown;
 }
-
-

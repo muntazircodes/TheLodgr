@@ -94,5 +94,3 @@ router.delete('/:packageId', [authMiddleware], async (req: Request, res: Respons
 });
 
 export default router;
-
-

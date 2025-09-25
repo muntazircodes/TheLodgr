@@ -13,7 +13,11 @@ export class PackagesService {
 
     async getAll(params: { userId: string }): Promise<IPackage[]> {
         const { userId } = params;
-        const { data, error } = await this.db.from('packages').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+        const { data, error } = await this.db
+            .from('packages')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
         if (error) throw new BadRequestError(error.message);
         return data as IPackage[];
     }
@@ -37,13 +41,22 @@ export class PackagesService {
         const { userId, destinationId, poiIds, currency = 'INR', name, description } = params;
 
         // Validate destination exists
-        const { data: dest, error: destErr } = await this.db.from('destinations').select('id, name').eq('id', destinationId).single();
+        const { data: dest, error: destErr } = await this.db
+            .from('destinations')
+            .select('id, name')
+            .eq('id', destinationId)
+            .single();
         if (destErr) throw new BadRequestError(destErr.message);
 
         // Validate POIs belong to destination
-        const { data: pois, error: poisErr } = await this.db.from('pois').select('id, name').in('id', poiIds).eq('destination_id', destinationId);
+        const { data: pois, error: poisErr } = await this.db
+            .from('pois')
+            .select('id, name')
+            .in('id', poiIds)
+            .eq('destination_id', destinationId);
         if (poisErr) throw new BadRequestError(poisErr.message);
-        if (!pois || pois.length !== poiIds.length) throw new BadRequestError('One or more POIs are invalid for the destination');
+        if (!pois || pois.length !== poiIds.length)
+            throw new BadRequestError('One or more POIs are invalid for the destination');
 
         // Fetch base price for destination
         const basePrice = await this.lookupEntityPrice({ entityType: 'destination', entityId: destinationId });
@@ -53,12 +66,26 @@ export class PackagesService {
             poiIds.map(async (poiId) => {
                 const unitPrice = await this.lookupEntityPrice({ entityType: 'poi', entityId: poiId });
                 const poiName = pois.find((p) => p.id === poiId)?.name;
-                return { entity_type: 'poi' as const, entity_id: poiId, name: poiName, unit_price: unitPrice, quantity: 1, total: unitPrice };
+                return {
+                    entity_type: 'poi' as const,
+                    entity_id: poiId,
+                    name: poiName,
+                    unit_price: unitPrice,
+                    quantity: 1,
+                    total: unitPrice,
+                };
             })
         );
 
         const items: IPackageBreakdown['items'] = [
-            { entity_type: 'destination', entity_id: destinationId, name: dest.name, unit_price: basePrice, quantity: 1, total: basePrice },
+            {
+                entity_type: 'destination',
+                entity_id: destinationId,
+                name: dest.name,
+                unit_price: basePrice,
+                quantity: 1,
+                total: basePrice,
+            },
             ...poiPriceItems,
         ];
 
@@ -75,7 +102,17 @@ export class PackagesService {
      * Persist a package under the user's account
      */
     async create(params: IPackage): Promise<IPackage> {
-        const { user_id, destination_id, name, description, poi_ids, breakdown, currency, is_active = true, priority } = params;
+        const {
+            user_id,
+            destination_id,
+            name,
+            description,
+            poi_ids,
+            breakdown,
+            currency,
+            is_active = true,
+            priority,
+        } = params;
 
         const { data, error } = await this.db
             .from('packages')
@@ -101,7 +138,13 @@ export class PackagesService {
     async update(params: { userId: string; packageId: string; update: Partial<IPackage> }): Promise<IPackage> {
         const { userId, packageId, update } = params;
         await this.getById({ userId, packageId });
-        const { data, error } = await this.db.from('packages').update(update).eq('id', packageId).eq('user_id', userId).select('*').single();
+        const { data, error } = await this.db
+            .from('packages')
+            .update(update)
+            .eq('id', packageId)
+            .eq('user_id', userId)
+            .select('*')
+            .single();
         if (error) throw new BadRequestError(error.message);
         return data as IPackage;
     }
@@ -129,5 +172,3 @@ export class PackagesService {
         return data.price as number;
     }
 }
-
-
