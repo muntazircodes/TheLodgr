@@ -1,7 +1,7 @@
 {
-    "name": "antlers",
+    "name": "TheLodgr",
     "version": "1.0.0",
-    "description": "Antlers is a modular travel-booking backend that powers curated Kashmir destinations",
+    "description": "TheLodgr is a modular travel-booking backend that powers curated Kashmir destinations",
     "keywords": [
         "BNB",
         "Travel",
@@ -9,13 +9,13 @@
         "and",
         "Travel"
     ],
-    "homepage": "https://github.com/muntazircodes/antlers#readme",
+    "homepage": "https://github.com/muntazircodes/TheLodgr#readme",
     "bugs": {
-        "url": "https://github.com/muntazircodes/antlers/issues"
+        "url": "https://github.com/muntazircodes/TheLodgr/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/muntazircodes/antlers.git"
+        "url": "git+https://github.com/muntazircodes/TheLodgr.git"
     },
     "license": "MIT",
     "author": "Muntazir",
