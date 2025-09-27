@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { DestinationService } from '../services/destination.service';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import  adminAuthMiddleWare  from '../middlewares/admin.middleware'
 
 const router = Router();
 const destinationService = new DestinationService();
@@ -10,7 +11,7 @@ const destinationService = new DestinationService();
  *  @description        Get all destinations
  *  @access             protected
  */
-router.get('/', [authMiddleware], async (req: Request, res: Response) => {
+router.get('/', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
     const destinations = await destinationService.getAll();
     res.send(destinations);
 });
