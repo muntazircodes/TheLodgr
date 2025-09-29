@@ -11,7 +11,7 @@ const destinationService = new DestinationService();
  *  @description        Get all destinations
  *  @access             protected
  */
-router.get('/', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.get('/', [authMiddleware], async (req: Request, res: Response) => {
     const destinations = await destinationService.getAll();
     res.send(destinations);
 });
@@ -21,7 +21,7 @@ router.get('/', [authMiddleware, adminAuthMiddleWare], async (req: Request, res:
  *  @description        Create a new destination
  *  @access             protected
  */
-router.post('/', [authMiddleware], async (req: Request, res: Response) => {
+router.post('/', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
     const { name, slug, area, metadata } = req.body;
     const destination = await destinationService.create({ name, slug, area, metadata });
     res.send(destination);
@@ -34,7 +34,7 @@ router.post('/', [authMiddleware], async (req: Request, res: Response) => {
  */
 router.get('/:destinationId', [authMiddleware], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
-    const destination = await destinationService.getById(destinationId);
+    const destination = await destinationService.getById({ destinationId });
     res.send(destination);
 });
 
@@ -43,7 +43,7 @@ router.get('/:destinationId', [authMiddleware], async (req: Request, res: Respon
  *  @description        Update a destination by ID
  *  @access             protected
  */
-router.patch('/:destinationId', [authMiddleware], async (req: Request, res: Response) => {
+router.patch('/:destinationId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
     const { name, slug, area, metadata } = req.body;
 
@@ -56,9 +56,9 @@ router.patch('/:destinationId', [authMiddleware], async (req: Request, res: Resp
  *  @description        Delete a destination by ID
  *  @access             protected
  */
-router.delete('/:destinationId', [authMiddleware], async (req: Request, res: Response) => {
+router.delete('/:destinationId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
-    const destination = await destinationService.delete(destinationId);
+    const destination = await destinationService.delete({ destinationId });
     res.send(destination);
 });
 
