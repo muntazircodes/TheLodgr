@@ -1,3 +1,4 @@
+import { UserRoles } from '../enums/user-role.enum';
 export interface IUser {
     id?: string;
     name: string;
@@ -14,6 +15,5 @@ export interface IUser {
     phone_primary?: string;
     phone_alternate?: string;
 
-    created_at?: string;
-    updated_at?: string;
+    roles?: UserRoles[];
 }

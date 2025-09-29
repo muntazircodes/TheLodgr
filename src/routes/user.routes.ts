@@ -5,15 +5,13 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 import { UserService } from '../services/user.service';
 
 const userService = new UserService();
-
 const router = Router();
 
 /**
  *  @method             GET
- *  @description        GET all the users
+ *  @description        GET all users
  *  @access             private
  */
-
 router.get('/', [authMiddleware], async (req: Request, res: Response) => {
     const users = await userService.getAllUsers();
     res.send(users);
@@ -61,24 +59,23 @@ router.post('/', [authMiddleware], async (req: Request, res: Response) => {
 
 /**
  *  @method             GET
- *  @description        GET the user by ID
+ *  @description        GET user by ID
  *  @access             private
  */
-
 router.get('/:userId', [authMiddleware], async (req: Request, res: Response) => {
     const { userId } = req.params;
-    const userProfile = await userService.getById({ userId: userId });
+    const userProfile = await userService.getById({ userId });
     res.send(userProfile);
 });
 
 /**
  *  @method             PATCH
- *  @description        Update the existing user
+ *  @description        Update existing user
  *  @access             private
  */
-
 router.patch('/:userId', [authMiddleware], async (req: Request, res: Response) => {
-    const userId = req.user!.id;
+    const { userId } = req.params;
+
     const {
         name,
         profile,
@@ -93,8 +90,7 @@ router.patch('/:userId', [authMiddleware], async (req: Request, res: Response) =
         phone_alternate,
     } = req.body;
 
-    const userProfile = await userService.update({
-        id: userId,
+    const updatedUser = await userService.update(userId, {
         name,
         profile,
         aadhaar_number,
@@ -107,19 +103,19 @@ router.patch('/:userId', [authMiddleware], async (req: Request, res: Response) =
         phone_primary,
         phone_alternate,
     });
-    res.send(userProfile);
+
+    res.send(updatedUser);
 });
 
 /**
  *  @method             DELETE
- *  @description        Delete the existing user
+ *  @description        Delete existing user
  *  @access             private
  */
-
 router.delete('/:userId', [authMiddleware], async (req: Request, res: Response) => {
     const { userId } = req.params;
-    const userProfile = userService.delete({ userId });
-    res.send(userProfile);
+    const deletedUser = await userService.delete({ userId });
+    res.send(deletedUser);
 });
 
 export default router;

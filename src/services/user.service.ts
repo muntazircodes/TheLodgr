@@ -1,6 +1,7 @@
 import { BadRequestError, NotFoundError } from '@hyperflake/http-errors';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getDB } from '../configuration/database.config';
+import { IUser } from '../interfaces/user.inteface';
 
 export class UserService {
     private get db(): SupabaseClient {
@@ -8,42 +9,61 @@ export class UserService {
     }
 
     /**
-     * @desc Get the profile for user
+     * @desc Get all user profiles with roles
      */
     async getAllUsers() {
-        const { data, error } = await this.db.from('user_profiles').select('*');
+        const { data, error } = await this.db.from('user_profiles').select(
+            `
+                *,
+                user_roles (
+                    roles ( name )
+                )
+                `
+        );
+
         if (error) throw new BadRequestError(error.message);
-        return { data };
+
+        const users = data?.map((u: any) => ({
+            ...u,
+            roles: u.user_roles?.map((ur: any) => ur.roles.name) ?? [],
+        }));
+
+        return { data: users };
     }
 
     /**
-     * @desc Get a user profile by ID (returns null if not found)
+     * @desc Get a user profile by ID with roles
      */
     async getById(params: { userId: string }) {
         const { userId } = params;
 
-        const { data, error } = await this.db.from('user_profiles').select('*').eq('id', userId).single();
+        const { data, error } = await this.db
+            .from('user_profiles')
+            .select(
+                `
+                *,
+                user_roles (
+                    roles ( name )
+                )
+                `
+            )
+            .eq('id', userId)
+            .single();
+
         if (error) throw new NotFoundError(error.message);
-        return { data };
+
+        const user = {
+            ...data,
+            roles: data.user_roles?.map((ur: any) => ur.roles.name) ?? [],
+        };
+
+        return { data: user };
     }
 
     /**
-     * @desc Create the profile for user
+     * @desc Create a user profile (roles handled separately in user_roles)
      */
-    async create(params: {
-        id?: string;
-        name: string;
-        profile?: string;
-        aadhaar_number: string;
-        address_line1: string;
-        address_line2?: string;
-        city: string;
-        state: string;
-        postal_code: string;
-        country: string;
-        phone_primary: string;
-        phone_alternate?: string;
-    }) {
+    async create(params: IUser) {
         const {
             id,
             name,
@@ -89,24 +109,10 @@ export class UserService {
     }
 
     /**
-     * @desc Update the profile for a user
+     * @desc Update a user profile (roles handled separately in user_roles)
      */
-    async update(params: {
-        id?: string;
-        name?: string;
-        profile?: string;
-        aadhaar_number?: string;
-        address_line1?: string;
-        address_line2?: string;
-        city?: string;
-        state?: string;
-        postal_code?: string;
-        country?: string;
-        phone_primary?: string;
-        phone_alternate?: string;
-    }) {
+    async update(userId: string, params: IUser) {
         const {
-            id,
             name,
             profile,
             address_line1,
@@ -119,11 +125,7 @@ export class UserService {
             phone_alternate,
         } = params;
 
-        if (!id) {
-            throw new NotFoundError('The user Id is not passed, please check');
-        }
-
-        await this.getByIdOrThrow({ userId: id });
+        await this.getByIdOrThrow({ userId });
 
         const { data, error } = await this.db
             .from('user_profiles')
@@ -138,9 +140,9 @@ export class UserService {
                 country,
                 phone_primary,
                 phone_alternate,
-                updated_at: new Date().toISOString(), // keep schema in sync
+                updated_at: new Date().toISOString(), // redundant but okay
             })
-            .eq('id', id)
+            .eq('id', userId)
             .select()
             .single();
 
@@ -149,7 +151,7 @@ export class UserService {
     }
 
     /**
-     * @desc Delete the profile for a user
+     * @desc Delete a user profile
      */
     async delete(params: { userId: string }) {
         const { userId } = params;
@@ -162,7 +164,7 @@ export class UserService {
     }
 
     /**
-     * @desc Get a user profile by ID or throw NotFoundError if not found
+     * @desc Get user by ID or throw NotFoundError
      */
     private async getByIdOrThrow(params: { userId: string }) {
         const { userId } = params;
