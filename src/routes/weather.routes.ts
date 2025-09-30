@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import haveAccess from '../middlewares/have-access.middleware';
 import { WeatherService } from '../services/weather.service';
-import adminMiddleware from '../middlewares/admin.middleware';
 
 const router = Router({ mergeParams: true });
 const weatherService = new WeatherService();
@@ -23,7 +23,7 @@ router.get('/', [authMiddleware], async (req: Request, res: Response) => {
  *  @access             protected
  *  @route              /api/v1/weather/destination/:destinationId/update
  */
-router.post('/', [authMiddleware, adminMiddleware], async (req: Request, res: Response) => {
+router.post('/', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
     const { isFinal = false } = req.body;
 

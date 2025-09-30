@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
-import { DestinationService } from '../services/destination.service';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import adminAuthMiddleWare from '../middlewares/admin.middleware';
+import adminAuthMiddleWare from '../middlewares/have-access.middleware';
+import { DestinationService } from '../services/destination.service';
 
 const router = Router();
 const destinationService = new DestinationService();
