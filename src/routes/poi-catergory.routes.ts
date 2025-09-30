@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { PoiCategoryService } from '../services/poi-categories.service';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import adminMiddleware from '../middlewares/admin.middleware';
 
 const poiCategoryService = new PoiCategoryService();
 const router = Router();
@@ -22,7 +23,7 @@ router.get('/', [authMiddleware], async (req: Request, res: Response) => {
  *  @access             private
  */
 
-router.post('/', [authMiddleware], async (req: Request, res: Response) => {
+router.post('/', [authMiddleware, adminMiddleware], async (req: Request, res: Response) => {
     const { name, icon, description } = req.body;
     const poiCategories = await poiCategoryService.create({ name, icon, description });
     res.send(poiCategories);
@@ -45,7 +46,7 @@ router.get('/:poiCategoryId', [authMiddleware], async (req: Request, res: Respon
  *  @access             private
  */
 
-router.patch('/:poiCategoryId', [authMiddleware], async (req: Request, res: Response) => {
+router.patch('/:poiCategoryId', [authMiddleware, adminMiddleware], async (req: Request, res: Response) => {
     const { poiCategoryId } = req.params;
     const { name, icon, description } = req.body;
     const poiCategories = await poiCategoryService.update(poiCategoryId, { name, icon, description });
@@ -58,7 +59,7 @@ router.patch('/:poiCategoryId', [authMiddleware], async (req: Request, res: Resp
  *  @access             private
  */
 
-router.get('/:poiCategoryId', [authMiddleware], async (req: Request, res: Response) => {
+router.delete('/:poiCategoryId', [authMiddleware, adminMiddleware], async (req: Request, res: Response) => {
     const { poiCategoryId } = req.params;
     const poiCategories = await poiCategoryService.delete({ poiCategoryId });
     res.send(poiCategories);
