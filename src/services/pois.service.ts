@@ -10,12 +10,12 @@ export class PoiService {
     }
 
     /**
-     * @desc Get all POIs of a destinations
+     * @desc Get all POIs of a destination
      */
-
     async getAll(params: { destinationId: string }): Promise<IPoi[]> {
         const { destinationId } = params;
         const { data, error } = await this.db.from('pois').select('*').eq('destination_id', destinationId);
+
         if (error) throw new BadRequestError(error.message);
         return data;
     }
@@ -24,20 +24,13 @@ export class PoiService {
      * @desc Get a POI by its Id and destinationId
      */
     async getById(params: { destinationId: string; poiId: string }): Promise<IPoi> {
-        const { destinationId, poiId } = params;
-        const { data, error } = await this.db
-            .from('pois')
-            .select('*')
-            .eq('id', poiId)
-            .eq('destination_id', destinationId)
-            .single();
-        if (error || !data) throw new NotFoundError(`POI with ID ${poiId} not found in destination ${destinationId}`);
-        return data;
+        return await this.getByIdOrThrow(params.poiId, params.destinationId);
     }
+
     /**
      * @desc Create a POI
      */
-    async create(params: IPoi) {
+    async create(params: IPoi): Promise<IPoi> {
         const {
             destination_id,
             name,
@@ -55,6 +48,7 @@ export class PoiService {
             min_zoom,
             priority,
         } = params;
+
         const { data, error } = await this.db
             .from('pois')
             .insert([
@@ -78,13 +72,18 @@ export class PoiService {
             ])
             .select()
             .single();
-        if (error || !data) throw new BadRequestError(error!.message);
+
+        if (error || !data) throw new BadRequestError(error?.message || 'Failed to create POI');
         return data;
     }
+
     /**
      * @desc Update a POI
      */
-    async update(poiId: string, params: Omit<IPoi, 'id' | 'destination_id' | 'category_id'>) {
+    async update(poiId: string, params: Omit<IPoi, 'id' | 'destination_id' | 'category_id'>): Promise<IPoi> {
+        // Ensure record exists first
+        await this.getByIdOrThrow(poiId);
+
         const {
             name,
             description,
@@ -100,6 +99,7 @@ export class PoiService {
             min_zoom,
             priority,
         } = params;
+
         const { data, error } = await this.db
             .from('pois')
             .update({
@@ -120,17 +120,42 @@ export class PoiService {
             .eq('id', poiId)
             .select()
             .single();
-        if (error || !data) throw new BadRequestError(error!.message);
+
+        if (error || !data) throw new BadRequestError(error?.message || 'Failed to update POI');
         return data;
     }
+
     /**
      * @desc Delete a POI
      */
-    async delete(params: { poiId: string }) {
-        const { poiId } = params;
-        const { data, error } = await this.db.from('pois').delete().eq('id', poiId).select().single();
+    async delete(params: { poiId: string }): Promise<IPoi> {
+        // Ensure record exists first
+        await this.getByIdOrThrow(params.poiId);
 
-        if (error || !data) throw new BadRequestError(error!.message);
+        const { data, error } = await this.db.from('pois').delete().eq('id', params.poiId).select().single();
+
+        if (error || !data) throw new BadRequestError(error?.message || 'Failed to delete POI');
+        return data;
+    }
+
+    /**
+     * @desc Get POI by Id (optionally scoped by destination) or throw error
+     */
+    private async getByIdOrThrow(poiId: string, destinationId?: string): Promise<IPoi> {
+        let query = this.db.from('pois').select('*').eq('id', poiId);
+
+        if (destinationId) {
+            query = query.eq('destination_id', destinationId);
+        }
+
+        const { data, error } = await query.maybeSingle();
+
+        if (error) throw new BadRequestError(error.message);
+        if (!data) {
+            const scopeMsg = destinationId ? ` in destination ${destinationId}` : '';
+            throw new NotFoundError(`POI with ID ${poiId} not found${scopeMsg}`);
+        }
+
         return data;
     }
 }

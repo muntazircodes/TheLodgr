@@ -22,9 +22,7 @@ export class PoiRatingService {
      * @desc Get the rating of a POI by its rating ID
      */
     async getById(params: { ratingId: string }): Promise<IPoiRating> {
-        const { ratingId } = params;
-        const { data, error } = await this.db.from('poi_ratings').select('*').eq('id', ratingId).single();
-        if (error) throw new BadRequestError(error.message);
+        const data = this.getByIdOrThrow(params.ratingId);
         return data;
     }
 
@@ -50,14 +48,7 @@ export class PoiRatingService {
      * @desc Update a rating for a POI and update the POI's average rating and total ratings
      */
     async update(ratingId: string, params: Partial<IPoiRating>): Promise<IPoiRating> {
-        // Get the existing rating to fetch poi_id
-        const { data: existing, error: fetchError } = await this.db
-            .from('poi_ratings')
-            .select('*')
-            .eq('id', ratingId)
-            .single();
-
-        if (fetchError || !existing) throw new NotFoundError('Rating not found');
+        const existing = await this.getByIdOrThrow(ratingId);
 
         const { data, error } = await this.db
             .from('poi_ratings')
@@ -66,7 +57,7 @@ export class PoiRatingService {
             .select('*')
             .single();
 
-        if (error) throw new BadRequestError(error.message);
+        if (error || !data) throw new BadRequestError(error?.message || 'Failed to update rating');
 
         await this.updatePoiAggregate(existing.poi_id);
 
@@ -77,14 +68,7 @@ export class PoiRatingService {
      * @desc Delete a rating for a POI and update the POI's average rating and total ratings
      */
     async delete(ratingId: string): Promise<{ success: boolean }> {
-        // Get the existing rating to fetch poi_id
-        const { data: existing, error: fetchError } = await this.db
-            .from('poi_ratings')
-            .select('*')
-            .eq('id', ratingId)
-            .single();
-
-        if (fetchError || !existing) throw new NotFoundError('Rating not found');
+        const existing = await this.getByIdOrThrow(ratingId);
 
         const { error } = await this.db.from('poi_ratings').delete().eq('id', ratingId);
 
@@ -119,5 +103,17 @@ export class PoiRatingService {
             .eq('id', poi_id);
 
         if (poiUpdateError) throw new BadRequestError(poiUpdateError.message);
+    }
+
+    /**
+     * @desc Get rating by Id or throw error
+     */
+    private async getByIdOrThrow(ratingId: string): Promise<IPoiRating> {
+        const { data, error } = await this.db.from('poi_ratings').select('*').eq('id', ratingId).maybeSingle();
+
+        if (error) throw new BadRequestError(error.message);
+        if (!data) throw new NotFoundError(`Rating with ID ${ratingId} not found`);
+
+        return data;
     }
 }

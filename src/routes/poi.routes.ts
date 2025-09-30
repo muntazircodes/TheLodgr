@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
-import { PoiService } from '../services/pois.service';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import { BadRequestError } from '@hyperflake/http-errors';
+import haveAccess from '../middlewares/have-access.middleware';
+import { PoiService } from '../services/pois.service';
 
 const poiService = new PoiService();
 const router = Router({ mergeParams: true });
@@ -24,7 +24,7 @@ router.get('/', [authMiddleware], async (req: Request, res: Response) => {
  *  @access             private
  */
 
-router.post('/', [authMiddleware], async (req: Request, res: Response) => {
+router.post('/', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
     const {
         name,
@@ -79,7 +79,7 @@ router.get('/:poiId', [authMiddleware], async (req: Request, res: Response) => {
  *  @access             private
  */
 
-router.patch('/:poiId', [authMiddleware], async (req: Request, res: Response) => {
+router.patch('/:poiId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { poiId } = req.params;
 
     const {
@@ -123,7 +123,7 @@ router.patch('/:poiId', [authMiddleware], async (req: Request, res: Response) =>
  *  @access             private
  */
 
-router.delete('/:poiId', [authMiddleware], async (req: Request, res: Response) => {
+router.delete('/:poiId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { poiId } = req.params;
     const poi = await poiService.delete({ poiId });
     res.send(poi);
