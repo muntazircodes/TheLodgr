@@ -22,7 +22,8 @@ export class TransportBookingService {
      */
     async getById(params: { bookingId: string }): Promise<ITransportBooking> {
         const { bookingId } = params;
-        return this.getByIdOrThrow(bookingId);
+        const data = await this.getByIdOrThrow(bookingId);
+        return data;
     }
 
     /**

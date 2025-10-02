@@ -22,7 +22,8 @@ export class TransportVehicleService {
      */
     async getById(params: { vehicleId: string }): Promise<ITransportVehicle> {
         const { vehicleId } = params;
-        return this.getByIdOrThrow(vehicleId);
+        const data = await this.getByIdOrThrow(vehicleId);
+        return data;
     }
 
     /**

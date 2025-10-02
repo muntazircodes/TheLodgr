@@ -22,7 +22,8 @@ export class TransportDriverService {
      */
     async getById(params: { driverId: string }): Promise<ITransportDriver> {
         const { driverId } = params;
-        return this.getByIdOrThrow(driverId);
+        const data = await this.getByIdOrThrow(driverId);
+        return data;
     }
 
     /**

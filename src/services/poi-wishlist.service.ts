@@ -23,7 +23,8 @@ export class PoiWishlistService {
      * @desc Get wishlist by ID
      */
     async getById(params: { wishlistId: string }): Promise<IPoiWishlist> {
-        const data = this.getByIdOrThrow(params.wishlistId);
+        const { wishlistId } = params;
+        const data = this.getByIdOrThrow({ wishlistId });
         return data;
     }
 
@@ -42,8 +43,8 @@ export class PoiWishlistService {
      * @desc Delete a wishlist entry
      */
     async delete(params: { wishlistId: string }): Promise<IPoiWishlist> {
-        // Ensure it exists before deletion
-        await this.getByIdOrThrow(params.wishlistId);
+        const { wishlistId } = params;
+        await this.getByIdOrThrow({ wishlistId });
 
         const { data, error } = await this.db
             .from('wishlists')
@@ -59,7 +60,8 @@ export class PoiWishlistService {
     /**
      * @desc Get wishlist by ID or throw error
      */
-    private async getByIdOrThrow(wishlistId: string): Promise<IPoiWishlist> {
+    private async getByIdOrThrow(params: { wishlistId: string }): Promise<IPoiWishlist> {
+        const { wishlistId } = params;
         const { data, error } = await this.db.from('wishlists').select('*').eq('id', wishlistId).maybeSingle();
 
         if (error) throw new BadRequestError(error.message);
