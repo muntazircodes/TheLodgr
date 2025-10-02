@@ -20,8 +20,9 @@ export class AccommodationService {
     /**
      * @desc Get accommodation by ID
      */
-    async getById(id: string): Promise<IAccommodation> {
-        const data = this.getByIdOrThrow(id);
+    async getById(params: { accommodationId: string }): Promise<IAccommodation> {
+        const { accommodationId } = params;
+        const data = this.getByIdOrThrow({ accommodationId });
         return data;
     }
 
@@ -29,7 +30,15 @@ export class AccommodationService {
      * @desc Create a new accommodation
      */
     async create(params: ICreateAccommodation): Promise<IAccommodation> {
-        const { data, error } = await this.db.from('accommodations').insert([params]).select().single();
+        const { destination_id, name, type, description, price_per_night, capacity, amenities, images, is_active } =
+            params;
+        const { data, error } = await this.db
+            .from('accommodations')
+            .insert([
+                { destination_id, name, type, description, price_per_night, capacity, amenities, images, is_active },
+            ])
+            .select()
+            .single();
         if (error || !data) throw new BadRequestError(error?.message || 'Failed to create accommodation');
         return data;
     }
@@ -37,9 +46,15 @@ export class AccommodationService {
     /**
      * @desc Update an existing accommodation
      */
-    async update(id: string, params: IUpdateAccommodation): Promise<IAccommodation> {
-        await this.getByIdOrThrow(id);
-        const { data, error } = await this.db.from('accommodations').update(params).eq('id', id).select().single();
+    async update(accommodationId: string, params: IUpdateAccommodation): Promise<IAccommodation> {
+        await this.getByIdOrThrow({ accommodationId });
+        const { name, type, description, price_per_night, capacity, amenities, images, is_active } = params;
+        const { data, error } = await this.db
+            .from('accommodations')
+            .update({ name, type, description, price_per_night, capacity, amenities, images, is_active })
+            .eq('id', accommodationId)
+            .select()
+            .single();
         if (error || !data) throw new BadRequestError(error?.message || 'Failed to update accommodation');
         return data;
     }
@@ -47,19 +62,25 @@ export class AccommodationService {
     /**
      * @desc Delete an accommodation by ID
      */
-    async delete(id: string): Promise<void> {
-        await this.getByIdOrThrow(id);
-        const { error } = await this.db.from('accommodations').delete().eq('id', id);
+    async delete(params: { accommodationId: string }): Promise<void> {
+        const { accommodationId } = params;
+        await this.getByIdOrThrow({ accommodationId });
+        const { error } = await this.db.from('accommodations').delete().eq('id', accommodationId);
         if (error) throw new BadRequestError(error.message);
     }
 
     /**
      * @desc Get accommodation by ID or throw error if not found
      */
-    private async getByIdOrThrow(id: string): Promise<IAccommodation> {
-        const { data, error } = await this.db.from('accommodations').select('*').eq('id', id).maybeSingle();
+    private async getByIdOrThrow(params: { accommodationId: string }): Promise<IAccommodation> {
+        const { accommodationId } = params;
+        const { data, error } = await this.db
+            .from('accommodations')
+            .select('*')
+            .eq('id', accommodationId)
+            .maybeSingle();
         if (error) throw new BadRequestError(error.message);
-        if (!data) throw new NotFoundError(`Accommodation with ID ${id} not found`);
+        if (!data) throw new NotFoundError(`Accommodation with ID ${accommodationId} not found`);
         return data;
     }
 }

@@ -24,7 +24,7 @@ router.get('/', [authMiddleware], async (req: Request, res: Response) => {
  */
 router.get('/:accommodationId', [authMiddleware], async (req: Request, res: Response) => {
     const { accommodationId } = req.params;
-    const accommodation = await accommodationService.getById(accommodationId);
+    const accommodation = await accommodationService.getById({ accommodationId });
     res.send(accommodation);
 });
 
@@ -34,8 +34,19 @@ router.get('/:accommodationId', [authMiddleware], async (req: Request, res: Resp
  *  @access             private
  */
 router.post('/', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
-    const payload = req.body;
-    const created = await accommodationService.create(payload);
+    const { destinationId } = req.params;
+    const { name, type, description, price_per_night, capacity, amenities, images, is_active } = req.body;
+    const created = await accommodationService.create({
+        destination_id: destinationId,
+        name,
+        type,
+        description,
+        price_per_night,
+        capacity,
+        amenities,
+        images,
+        is_active,
+    });
     res.send(created);
 });
 
@@ -46,8 +57,17 @@ router.post('/', [authMiddleware, haveAccess], async (req: Request, res: Respons
  */
 router.patch('/:accommodationId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { accommodationId } = req.params;
-    const payload = req.body;
-    const updated = await accommodationService.update(accommodationId, payload);
+    const { name, type, description, price_per_night, capacity, amenities, images, is_active } = req.body;
+    const updated = await accommodationService.update(accommodationId, {
+        name,
+        type,
+        description,
+        price_per_night,
+        capacity,
+        amenities,
+        images,
+        is_active,
+    });
     res.send(updated);
 });
 
@@ -58,7 +78,7 @@ router.patch('/:accommodationId', [authMiddleware, haveAccess], async (req: Requ
  */
 router.delete('/:accommodationId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { accommodationId } = req.params;
-    await accommodationService.delete(accommodationId);
+    await accommodationService.delete({ accommodationId });
     res.send({ success: true });
 });
 
