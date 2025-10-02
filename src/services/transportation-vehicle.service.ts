@@ -58,13 +58,42 @@ export class TransportVehicleService {
      * @desc Update a transport vehicle
      */
     async update(vehicleId: string, params: IUpdateTransportVehicle): Promise<ITransportVehicle> {
+        const {
+            name,
+            type,
+            brand,
+            model,
+            license_plate,
+            capacity,
+            features,
+            image_url,
+            base_price,
+            price_per_km,
+            is_active,
+        } = params;
+
         const { data, error } = await this.db
             .from('transport_vehicles')
-            .update(params)
+            .update({
+                name,
+                type,
+                brand,
+                model,
+                license_plate,
+                capacity,
+                features: features || [],
+                image_url,
+                base_price,
+                price_per_km,
+                is_active,
+            })
             .eq('id', vehicleId)
             .select()
             .single();
-        if (error || !data) throw new NotFoundError(error!.message);
+
+        if (error || !data)
+            throw new NotFoundError(error?.message || `Transport vehicle with ID ${vehicleId} not found`);
+
         return data;
     }
 
