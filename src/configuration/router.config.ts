@@ -2,6 +2,8 @@ import { Express } from 'express';
 
 import authRoutes from '../routes/auth.routes';
 import destionRoutes from '../routes/destination.routes';
+import guideBookingRoutes from '../routes/guide-booking.routes';
+import guideRoutes from '../routes/guide.routes';
 import healthRoutes from '../routes/health.routes';
 import packageRoutes from '../routes/package.routes';
 import poiCategoryRoutes from '../routes/poi-catergory.routes';
@@ -30,4 +32,6 @@ export const initRouter = (app: Express) => {
     app.use('/api/v1/transport/vehicles', transportVehicleRoutes);
     app.use('/api/v1/transport/drivers', transportDriverRoutes);
     app.use('/api/v1/transport/bookings', transportBookingRoutes);
+    app.use('/api/v1/guides', guideRoutes);
+    app.use('/api/v1/guide-bookings', guideBookingRoutes);
 };
