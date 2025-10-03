@@ -22,7 +22,7 @@ export class TransportDriverService {
      */
     async getById(params: { driverId: string }): Promise<ITransportDriver> {
         const { driverId } = params;
-        const data = await this.getByIdOrThrow(driverId);
+        const data = await this.getByIdOrThrow({ driverId });
         return data;
     }
 
@@ -52,6 +52,8 @@ export class TransportDriverService {
      * @desc Update a transport driver
      */
     async update(driverId: string, params: IUpdateTransportDriver): Promise<ITransportDriver> {
+        await this.getByIdOrThrow({ driverId });
+
         const { name, phone, license_number, languages, is_active } = params;
 
         const { data, error } = await this.db
@@ -67,7 +69,8 @@ export class TransportDriverService {
             .select()
             .single();
 
-        if (error || !data) throw new NotFoundError(error?.message || `Transport driver with ID ${driverId} not found`);
+        if (error || !data)
+            throw new BadRequestError(error?.message || `Failed to update transport driver with ID ${driverId}`);
 
         return data;
     }
@@ -77,6 +80,9 @@ export class TransportDriverService {
      */
     async delete(params: { driverId: string }): Promise<ITransportDriver> {
         const { driverId } = params;
+
+        await this.getByIdOrThrow({ driverId });
+
         const { data, error } = await this.db.from('transport_drivers').delete().eq('id', driverId).select().single();
         if (error || !data) throw new BadRequestError(error!.message);
         return data;
@@ -85,7 +91,8 @@ export class TransportDriverService {
     /**
      * @desc Helper - Get driver by ID or throw
      */
-    private async getByIdOrThrow(driverId: string): Promise<ITransportDriver> {
+    private async getByIdOrThrow(params: { driverId: string }): Promise<ITransportDriver> {
+        const { driverId } = params;
         const { data, error } = await this.db.from('transport_drivers').select('*').eq('id', driverId).single();
         if (error || !data) throw new NotFoundError(`Transport driver with ID ${driverId} not found`);
         return data;

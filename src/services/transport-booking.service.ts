@@ -22,7 +22,7 @@ export class TransportBookingService {
      */
     async getById(params: { bookingId: string }): Promise<ITransportBooking> {
         const { bookingId } = params;
-        const data = await this.getByIdOrThrow(bookingId);
+        const data = await this.getByIdOrThrow({ bookingId });
         return data;
     }
 
@@ -88,6 +88,9 @@ export class TransportBookingService {
      * @desc Update a transport booking
      */
     async update(bookingId: string, params: IUpdateTransportBooking): Promise<ITransportBooking> {
+        // Ensure booking exists before updating
+        await this.getByIdOrThrow({ bookingId });
+
         const {
             vehicle_id,
             user_id,
@@ -130,7 +133,12 @@ export class TransportBookingService {
      */
     async delete(params: { bookingId: string }): Promise<ITransportBooking> {
         const { bookingId } = params;
+
+        // Ensure booking exists before deleting
+        await this.getByIdOrThrow({ bookingId });
+
         const { data, error } = await this.db.from('transport_bookings').delete().eq('id', bookingId).select().single();
+
         if (error || !data) throw new BadRequestError(error!.message);
         return data;
     }
@@ -138,7 +146,8 @@ export class TransportBookingService {
     /**
      * @desc Helper - Get booking by ID or throw
      */
-    private async getByIdOrThrow(bookingId: string): Promise<ITransportBooking> {
+    private async getByIdOrThrow(params: { bookingId: string }): Promise<ITransportBooking> {
+        const { bookingId } = params;
         const { data, error } = await this.db.from('transport_bookings').select('*').eq('id', bookingId).single();
         if (error || !data) throw new NotFoundError(`Transport booking with ID ${bookingId} not found`);
         return data;
