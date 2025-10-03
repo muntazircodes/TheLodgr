@@ -17,6 +17,9 @@ import transportDriverRoutes from '../routes/transport-driver.routes';
 import transportVehicleRoutes from '../routes/transportation-vehicle.routes';
 import userProfileRoutes from '../routes/user.routes';
 import weatherRoutes from '../routes/weather.routes';
+import activityCategoryRoutes from '../routes/activity-category.routes';
+import activityRoutes from '../routes/activity.routes';
+import activityBookingRoutes from '../routes/activity-booking.routes';
 
 export const initRouter = (app: Express) => {
     app.use('/api/v1/health', healthRoutes);
@@ -36,4 +39,7 @@ export const initRouter = (app: Express) => {
     app.use('/api/v1/transport/bookings', transportBookingRoutes);
     app.use('/api/v1/guides', guideRoutes);
     app.use('/api/v1/guide-bookings', guideBookingRoutes);
+    app.use('/api/v1/activity-categories', activityCategoryRoutes);
+    app.use('/api/v1/destinations/:destinationId/activities', activityRoutes);
+    app.use('/api/v1/activity-bookings', activityBookingRoutes);
 };
