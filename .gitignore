@@ -36,6 +36,7 @@ yarn-error.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 .cursor/
+.windsurf/
 
 # misc
 .DS_Store
