@@ -22,7 +22,9 @@ export class PoiCategoryService {
      * @desc Get POI by Id
      */
     async getById(params: { poiCategoryId: string }): Promise<IPoiCategory> {
-        return await this.getByIdOrThrow(params.poiCategoryId);
+        const { poiCategoryId } = params;
+        const data = await this.getByIdOrThrow({ poiCategoryId });
+        return data;
     }
 
     /**
@@ -44,8 +46,7 @@ export class PoiCategoryService {
      * @desc Update the POI category
      */
     async update(poiCategoryId: string, params: IPoiCategory): Promise<IPoiCategory> {
-        // Ensure record exists first
-        await this.getByIdOrThrow(poiCategoryId);
+        await this.getByIdOrThrow({ poiCategoryId });
 
         const { name, icon, description } = params;
         const { data, error } = await this.db
@@ -63,15 +64,10 @@ export class PoiCategoryService {
      * @desc Delete the POI category
      */
     async delete(params: { poiCategoryId: string }) {
-        // Ensure record exists first
-        await this.getByIdOrThrow(params.poiCategoryId);
+        const { poiCategoryId } = params;
+        await this.getByIdOrThrow({ poiCategoryId });
 
-        const { data, error } = await this.db
-            .from('poi_categories')
-            .delete()
-            .eq('id', params.poiCategoryId)
-            .select()
-            .single();
+        const { data, error } = await this.db.from('poi_categories').delete().eq('id', poiCategoryId).select().single();
 
         if (error || !data) throw new BadRequestError(error?.message || 'Failed to delete POI Category');
         return data;
@@ -80,7 +76,8 @@ export class PoiCategoryService {
     /**
      * @desc Get POI category by Id or throw error
      */
-    private async getByIdOrThrow(poiCategoryId: string): Promise<IPoiCategory> {
+    private async getByIdOrThrow(params: { poiCategoryId: string }): Promise<IPoiCategory> {
+        const { poiCategoryId } = params;
         const { data, error } = await this.db.from('poi_categories').select('*').eq('id', poiCategoryId).maybeSingle();
 
         if (error) throw new BadRequestError(error.message);

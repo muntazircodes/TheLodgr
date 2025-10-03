@@ -74,7 +74,7 @@ router.patch('/:ratingId', [authMiddleware], async (req: Request, res: Response)
 
 router.delete('/:ratingId', [authMiddleware], async (req: Request, res: Response) => {
     const { ratingId } = req.params;
-    const poiRating = await poiRatingService.delete(ratingId);
+    const poiRating = await poiRatingService.delete({ ratingId });
     res.send(poiRating);
 });
 

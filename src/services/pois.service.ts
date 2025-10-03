@@ -24,7 +24,9 @@ export class PoiService {
      * @desc Get a POI by its Id and destinationId
      */
     async getById(params: { destinationId: string; poiId: string }): Promise<IPoi> {
-        return await this.getByIdOrThrow(params.poiId, params.destinationId);
+        const { poiId, destinationId } = params;
+        const data = await this.getByIdOrThrow({ poiId, destinationId });
+        return data;
     }
 
     /**
@@ -81,8 +83,7 @@ export class PoiService {
      * @desc Update a POI
      */
     async update(poiId: string, params: Omit<IPoi, 'id' | 'destination_id' | 'category_id'>): Promise<IPoi> {
-        // Ensure record exists first
-        await this.getByIdOrThrow(poiId);
+        await this.getByIdOrThrow({ poiId });
 
         const {
             name,
@@ -129,10 +130,10 @@ export class PoiService {
      * @desc Delete a POI
      */
     async delete(params: { poiId: string }): Promise<IPoi> {
-        // Ensure record exists first
-        await this.getByIdOrThrow(params.poiId);
+        const { poiId } = params;
+        await this.getByIdOrThrow({ poiId });
 
-        const { data, error } = await this.db.from('pois').delete().eq('id', params.poiId).select().single();
+        const { data, error } = await this.db.from('pois').delete().eq('id', poiId).select().single();
 
         if (error || !data) throw new BadRequestError(error?.message || 'Failed to delete POI');
         return data;
@@ -141,7 +142,8 @@ export class PoiService {
     /**
      * @desc Get POI by Id (optionally scoped by destination) or throw error
      */
-    private async getByIdOrThrow(poiId: string, destinationId?: string): Promise<IPoi> {
+    private async getByIdOrThrow(params: { poiId: string; destinationId?: string }): Promise<IPoi> {
+        const { poiId, destinationId } = params;
         let query = this.db.from('pois').select('*').eq('id', poiId);
 
         if (destinationId) {

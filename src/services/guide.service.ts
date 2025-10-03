@@ -13,10 +13,8 @@ export class GuideService {
      */
     async getAllGuides() {
         const { data, error } = await this.db.from('guides').select('*').order('created_at', { ascending: false });
-
         if (error) throw new BadRequestError(error.message);
-
-        return { data };
+        return data;
     }
 
     /**
@@ -24,12 +22,8 @@ export class GuideService {
      */
     async getById(params: { guideId: string }) {
         const { guideId } = params;
-
-        const { data, error } = await this.db.from('guides').select('*').eq('id', guideId).single();
-
-        if (error) throw new NotFoundError(error.message);
-
-        return { data };
+        const data = await this.getByIdOrThrow({ guideId });
+        return data;
     }
 
     /**
@@ -55,7 +49,7 @@ export class GuideService {
             .single();
 
         if (error) throw new BadRequestError(error.message);
-        return { data };
+        return data;
     }
 
     /**
@@ -63,25 +57,15 @@ export class GuideService {
      */
     async update(guideId: string, params: IUpdateGuide) {
         const { name, phone, email, license_number, languages, specialties, is_active } = params;
-
         await this.getByIdOrThrow({ guideId });
-
-        const updateData: any = {
-            updated_at: new Date().toISOString(),
-        };
-
-        if (name !== undefined) updateData.name = name;
-        if (phone !== undefined) updateData.phone = phone;
-        if (email !== undefined) updateData.email = email;
-        if (license_number !== undefined) updateData.license_number = license_number;
-        if (languages !== undefined) updateData.languages = languages;
-        if (specialties !== undefined) updateData.specialties = specialties;
-        if (is_active !== undefined) updateData.is_active = is_active;
-
-        const { data, error } = await this.db.from('guides').update(updateData).eq('id', guideId).select().single();
-
+        const { data, error } = await this.db
+            .from('guides')
+            .update({ name, phone, email, license_number, languages, specialties, is_active })
+            .eq('id', guideId)
+            .select()
+            .single();
         if (error) throw new BadRequestError(error.message);
-        return { data };
+        return data;
     }
 
     /**
@@ -112,7 +96,7 @@ export class GuideService {
 
         if (error) throw new BadRequestError(error.message);
 
-        return { data };
+        return data;
     }
 
     /**
@@ -130,7 +114,7 @@ export class GuideService {
 
         if (error) throw new BadRequestError(error.message);
 
-        return { data };
+        return data;
     }
 
     /**

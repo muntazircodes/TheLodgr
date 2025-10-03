@@ -28,7 +28,7 @@ export class UserService {
             roles: u.user_roles?.map((ur: any) => ur.roles.name) ?? [],
         }));
 
-        return { data: users };
+        return users;
     }
 
     /**
@@ -57,7 +57,7 @@ export class UserService {
             roles: data.user_roles?.map((ur: any) => ur.roles.name) ?? [],
         };
 
-        return { data: user };
+        return user;
     }
 
     /**
@@ -105,7 +105,7 @@ export class UserService {
             .single();
 
         if (error) throw new BadRequestError(error.message);
-        return { data };
+        return data;
     }
 
     /**
@@ -147,7 +147,7 @@ export class UserService {
             .single();
 
         if (error) throw new BadRequestError(error.message);
-        return { data };
+        return data;
     }
 
     /**

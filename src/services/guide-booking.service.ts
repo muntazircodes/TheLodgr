@@ -35,7 +35,7 @@ export class GuideBookingService {
 
         if (error) throw new BadRequestError(error.message);
 
-        return { data };
+        return data;
     }
 
     /**
@@ -68,7 +68,7 @@ export class GuideBookingService {
 
         if (error) throw new NotFoundError(error.message);
 
-        return { data };
+        return data;
     }
 
     /**
@@ -122,7 +122,7 @@ export class GuideBookingService {
 
         if (error) throw new BadRequestError(error.message);
 
-        return { data };
+        return data;
     }
 
     /**
@@ -160,7 +160,7 @@ export class GuideBookingService {
             .single();
 
         if (error) throw new BadRequestError(error.message);
-        return { data };
+        return data;
     }
 
     /**
@@ -193,7 +193,7 @@ export class GuideBookingService {
             .single();
 
         if (error) throw new BadRequestError(error.message);
-        return { data };
+        return data;
     }
 
     /**
@@ -225,7 +225,7 @@ export class GuideBookingService {
             .single();
 
         if (error) throw new BadRequestError(error.message);
-        return { data };
+        return data;
     }
 
     /**

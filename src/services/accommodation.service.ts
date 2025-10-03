@@ -11,7 +11,8 @@ export class AccommodationService {
     /**
      * @desc Get all accommodations for a destination
      */
-    async getAll(destinationId: string): Promise<IAccommodation[]> {
+    async getAll(params: { destinationId: string }): Promise<IAccommodation[]> {
+        const { destinationId } = params;
         const { data, error } = await this.db.from('accommodations').select('*').eq('destination_id', destinationId);
         if (error) throw new BadRequestError(error.message);
         return data;

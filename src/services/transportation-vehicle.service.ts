@@ -22,7 +22,8 @@ export class TransportVehicleService {
      */
     async getById(params: { vehicleId: string }): Promise<ITransportVehicle> {
         const { vehicleId } = params;
-        return this.getByIdOrThrow(vehicleId);
+        const data = await this.getByIdOrThrow({ vehicleId });
+        return data;
     }
 
     /**
@@ -58,6 +59,8 @@ export class TransportVehicleService {
      * @desc Update a transport vehicle
      */
     async update(vehicleId: string, params: IUpdateTransportVehicle): Promise<ITransportVehicle> {
+        await this.getByIdOrThrow({ vehicleId });
+
         const {
             name,
             type,
@@ -92,7 +95,7 @@ export class TransportVehicleService {
             .single();
 
         if (error || !data)
-            throw new NotFoundError(error?.message || `Transport vehicle with ID ${vehicleId} not found`);
+            throw new BadRequestError(error?.message || `Failed to update transport vehicle with ID ${vehicleId}`);
 
         return data;
     }
@@ -102,7 +105,11 @@ export class TransportVehicleService {
      */
     async delete(params: { vehicleId: string }): Promise<ITransportVehicle> {
         const { vehicleId } = params;
+
+        await this.getByIdOrThrow({ vehicleId });
+
         const { data, error } = await this.db.from('transport_vehicles').delete().eq('id', vehicleId).select().single();
+
         if (error || !data) throw new BadRequestError(error!.message);
         return data;
     }
@@ -110,7 +117,8 @@ export class TransportVehicleService {
     /**
      * @desc Helper - Get vehicle by ID or throw
      */
-    private async getByIdOrThrow(vehicleId: string): Promise<ITransportVehicle> {
+    private async getByIdOrThrow(params: { vehicleId: string }): Promise<ITransportVehicle> {
+        const { vehicleId } = params;
         const { data, error } = await this.db.from('transport_vehicles').select('*').eq('id', vehicleId).single();
         if (error || !data) throw new NotFoundError(`Transport vehicle with ID ${vehicleId} not found`);
         return data;

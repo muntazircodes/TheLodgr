@@ -13,7 +13,7 @@ const accommodationService = new AccommodationService();
  */
 router.get('/', [authMiddleware], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
-    const accommodations = await accommodationService.getAll(destinationId);
+    const accommodations = await accommodationService.getAll({ destinationId });
     res.send(accommodations);
 });
 

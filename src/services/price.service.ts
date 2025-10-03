@@ -45,7 +45,7 @@ export class PriceService {
      */
     async update(params: { priceId: string; update: Partial<IPrice> }): Promise<IPrice> {
         const { priceId, update } = params;
-        // Ensure the price exists
+
         await this.getById({ priceId });
         const { data, error } = await this.db.from('prices').update(update).eq('id', priceId).select('*').single();
         if (error) throw new BadRequestError(error.message);
@@ -57,7 +57,7 @@ export class PriceService {
      */
     async delete(params: { priceId: string }): Promise<{ success: boolean }> {
         const { priceId } = params;
-        // Ensure the price exists
+
         await this.getById({ priceId });
         const { error } = await this.db.from('prices').delete().eq('id', priceId);
         if (error) throw new BadRequestError(error.message);

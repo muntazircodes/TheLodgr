@@ -22,7 +22,8 @@ export class PoiRatingService {
      * @desc Get the rating of a POI by its rating ID
      */
     async getById(params: { ratingId: string }): Promise<IPoiRating> {
-        const data = this.getByIdOrThrow(params.ratingId);
+        const { ratingId } = params;
+        const data = this.getByIdOrThrow({ ratingId });
         return data;
     }
 
@@ -48,7 +49,7 @@ export class PoiRatingService {
      * @desc Update a rating for a POI and update the POI's average rating and total ratings
      */
     async update(ratingId: string, params: Partial<IPoiRating>): Promise<IPoiRating> {
-        const existing = await this.getByIdOrThrow(ratingId);
+        const existing = await this.getByIdOrThrow({ ratingId });
 
         const { data, error } = await this.db
             .from('poi_ratings')
@@ -67,8 +68,9 @@ export class PoiRatingService {
     /**
      * @desc Delete a rating for a POI and update the POI's average rating and total ratings
      */
-    async delete(ratingId: string): Promise<{ success: boolean }> {
-        const existing = await this.getByIdOrThrow(ratingId);
+    async delete(params: { ratingId: string }): Promise<{ success: boolean }> {
+        const { ratingId } = params;
+        const existing = await this.getByIdOrThrow({ ratingId });
 
         const { error } = await this.db.from('poi_ratings').delete().eq('id', ratingId);
 
@@ -108,7 +110,8 @@ export class PoiRatingService {
     /**
      * @desc Get rating by Id or throw error
      */
-    private async getByIdOrThrow(ratingId: string): Promise<IPoiRating> {
+    private async getByIdOrThrow(params: { ratingId: string }): Promise<IPoiRating> {
+        const { ratingId } = params;
         const { data, error } = await this.db.from('poi_ratings').select('*').eq('id', ratingId).maybeSingle();
 
         if (error) throw new BadRequestError(error.message);
