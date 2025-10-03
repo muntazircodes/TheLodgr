@@ -68,7 +68,7 @@ export class GuideBookingService {
 
         if (error) throw new NotFoundError(error.message);
 
-        return data ;
+        return data;
     }
 
     /**
