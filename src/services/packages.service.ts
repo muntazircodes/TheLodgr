@@ -21,7 +21,7 @@ export class PackagesService {
      * @desc Get package by ID
      */
     async getById({ packageId }: { packageId: string }): Promise<IDBPackageRow> {
-        const data = this.getByIdOrThrow({ packageId });
+        const data = await this.getByIdOrThrow({ packageId });
         return data;
     }
 
