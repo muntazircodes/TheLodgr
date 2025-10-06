@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import adminAuthMiddleWare from '../middlewares/have-access.middleware';
+import haveAccess from '../middlewares/have-access.middleware';
 import { PackageComponentsService } from '../services/package-components.service';
 
 const router = Router({ mergeParams: true });
@@ -22,7 +22,7 @@ router.get('/', [authMiddleware], async (req: Request, res: Response) => {
  *  @description        Add a component to a package
  *  @access             protected (admin)
  */
-router.post('/', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.post('/', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { packageId } = req.params;
     const { component_type, component_id, quantity, price, meta } = req.body;
 
@@ -54,7 +54,7 @@ router.get('/:componentId', [authMiddleware], async (req: Request, res: Response
  *  @description        Update a package component by ID
  *  @access             protected (admin)
  */
-router.patch('/:componentId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.patch('/:componentId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { componentId } = req.params;
     const { component_type, component_id, quantity, price, meta } = req.body;
 
@@ -74,7 +74,7 @@ router.patch('/:componentId', [authMiddleware, adminAuthMiddleWare], async (req:
  *  @description        Remove a component from a package
  *  @access             protected (admin)
  */
-router.delete('/:componentId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.delete('/:componentId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { componentId } = req.params;
     await packageComponentsService.delete({ componentId });
     res.send({ success: true });

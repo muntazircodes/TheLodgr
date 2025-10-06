@@ -1,9 +1,11 @@
 import { BadRequestError, NotFoundError } from '@hyperflake/http-errors';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { getDB } from '../configuration/database.config';
-import { ICreatePackageComponent, IDBPackageComponentRow, IUpdatePackageComponent } from '../interfaces/packages.interface';
-
-
+import {
+    ICreatePackageComponent,
+    IDBPackageComponentRow,
+    IUpdatePackageComponent,
+} from '../interfaces/packages.interface';
 
 export class PackageComponentsService {
     private get db(): SupabaseClient {
