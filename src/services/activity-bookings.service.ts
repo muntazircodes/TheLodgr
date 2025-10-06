@@ -61,12 +61,16 @@ export class ActivityBookingService {
      */
     async update(
         bookingId: string,
-        params: Partial<Pick<IActivityBooking, 'package_id' | 'booking_date' | 'participants' | 'total_price' | 'status'>>
+        params: Partial<
+            Pick<IActivityBooking, 'package_id' | 'booking_date' | 'participants' | 'total_price' | 'status'>
+        >
     ): Promise<IActivityBooking> {
         await this.getByIdOrThrow({ bookingId });
 
         const { package_id, booking_date, participants, total_price, status } = params;
-        const updateData: Partial<Pick<IActivityBooking, 'package_id' | 'booking_date' | 'participants' | 'total_price' | 'status'>> & {
+        const updateData: Partial<
+            Pick<IActivityBooking, 'package_id' | 'booking_date' | 'participants' | 'total_price' | 'status'>
+        > & {
             updated_at: string;
         } = {
             updated_at: new Date().toISOString(),
@@ -104,7 +108,10 @@ export class ActivityBookingService {
     /**
      * @desc Update booking status
      */
-    async updateStatus(params: { bookingId: string; status: 'pending' | 'confirmed' | 'cancelled' }): Promise<IActivityBooking> {
+    async updateStatus(params: {
+        bookingId: string;
+        status: 'pending' | 'confirmed' | 'cancelled';
+    }): Promise<IActivityBooking> {
         const { bookingId, status } = params;
         await this.getByIdOrThrow({ bookingId });
 
