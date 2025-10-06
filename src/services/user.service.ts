@@ -11,7 +11,7 @@ export class UserService {
     /**
      * @desc Get all user profiles with roles
      */
-    async getAllUsers() {
+    async getAllUsers(): Promise<IUser[]> {
         const { data, error } = await this.db.from('user_profiles').select(
             `
                 *,
@@ -34,7 +34,7 @@ export class UserService {
     /**
      * @desc Get a user profile by ID with roles
      */
-    async getById(params: { userId: string }) {
+    async getById(params: { userId: string }): Promise<IUser> {
         const { userId } = params;
 
         const { data, error } = await this.db
@@ -63,7 +63,7 @@ export class UserService {
     /**
      * @desc Create a user profile (roles handled separately in user_roles)
      */
-    async create(params: IUser) {
+    async create(params: IUser): Promise<IUser> {
         const {
             id,
             name,
@@ -111,7 +111,7 @@ export class UserService {
     /**
      * @desc Update a user profile (roles handled separately in user_roles)
      */
-    async update(userId: string, params: IUser) {
+    async update(userId: string, params: IUser): Promise<IUser> {
         const {
             name,
             profile,
@@ -153,7 +153,7 @@ export class UserService {
     /**
      * @desc Delete a user profile
      */
-    async delete(params: { userId: string }) {
+    async delete(params: { userId: string }): Promise<IUser> {
         const { userId } = params;
 
         await this.getByIdOrThrow({ userId });

@@ -39,7 +39,7 @@ router.post('/', [authMiddleware], async (req: Request, res: Response) => {
         phone_alternate,
     } = req.body;
 
-    const { data } = await userService.create({
+    const data = await userService.create({
         id: userId,
         name,
         profile,
