@@ -8,60 +8,57 @@ export class PackagesService {
         return getDB();
     }
 
+    /**
+     * @desc Get all packages
+     */
     async getAll(): Promise<IDBPackageRow[]> {
         const { data, error } = await this.db.from('packages').select('*');
         if (error) throw new BadRequestError(error.message);
-        return data as IDBPackageRow[];
+        return data;
     }
 
-    async getById(params: { packageId: string }): Promise<IDBPackageRow> {
-        const { packageId } = params;
-        const row = await this.getByIdOrThrow({ packageId });
-        return row;
+    /**
+     * @desc Get package by ID
+     */
+    async getById({ packageId }: { packageId: string }): Promise<IDBPackageRow> {
+        const data = this.getByIdOrThrow({ packageId });
+        return data;
     }
 
+    /**
+     * @desc Get package by ID
+     */
     async create(params: ICreatePackage): Promise<IDBPackageRow> {
-        const { name, description, duration_days, base_price, user_id, is_custom, is_active } = params;
+        const insertPayload = Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined));
 
-        const insertPayload = Object.fromEntries(
-            Object.entries({ name, description, duration_days, base_price, user_id, is_custom, is_active }).filter(
-                ([_, v]) => v !== undefined
-            )
-        );
-
-        const { data, error } = await this.db.from('packages').insert([insertPayload]).select().single();
+        const { data, error } = await this.db.from('packages').insert([insertPayload]).select('*').single();
         if (error || !data) throw new BadRequestError(error?.message || 'Failed to create package');
-        return data as IDBPackageRow;
+        return data;
     }
 
+    /**
+     * @desc Update existing package
+     */
     async update(packageId: string, params: IUpdatePackage): Promise<IDBPackageRow> {
         await this.getByIdOrThrow({ packageId });
 
-        const updatePayload = Object.fromEntries(
-            Object.entries({
-                name: params.name,
-                description: params.description,
-                duration_days: params.duration_days,
-                base_price: params.base_price,
-                user_id: params.user_id,
-                is_custom: params.is_custom,
-                is_active: params.is_active,
-            }).filter(([_, v]) => v !== undefined)
-        );
+        const updatePayload = Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined));
 
         const { data, error } = await this.db
             .from('packages')
             .update(updatePayload)
             .eq('id', packageId)
-            .select()
+            .select('*')
             .single();
 
         if (error || !data) throw new BadRequestError(error?.message || 'Failed to update package');
-        return data as IDBPackageRow;
+        return data;
     }
 
-    async delete(params: { packageId: string }): Promise<void> {
-        const { packageId } = params;
+    /**
+     * @desc Delete package by ID
+     */
+    async delete({ packageId }: { packageId: string }): Promise<void> {
         await this.getByIdOrThrow({ packageId });
 
         const { error } = await this.db.from('packages').delete().eq('id', packageId);
@@ -69,11 +66,15 @@ export class PackagesService {
         return;
     }
 
-    private async getByIdOrThrow(params: { packageId: string }): Promise<IDBPackageRow> {
-        const { packageId } = params;
-        const { data, error } = await this.db.from('packages').select('*').eq('id', packageId).single();
+    /**
+     *  @desc Internal: Get package by ID or throw
+     */
+    private async getByIdOrThrow({ packageId }: { packageId: string }): Promise<IDBPackageRow> {
+        const { data, error } = await this.db.from('packages').select('*').eq('id', packageId).maybeSingle();
+
         if (error) throw new BadRequestError(error.message);
         if (!data) throw new NotFoundError(`Package with ID ${packageId} not found`);
-        return data as IDBPackageRow;
+
+        return data;
     }
 }
