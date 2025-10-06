@@ -1,96 +1,82 @@
 import { Request, Response, Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import adminAuthMiddleWare from '../middlewares/have-access.middleware';
 import { PackagesService } from '../services/packages.service';
 
-const router = Router({ mergeParams: true });
+const router = Router();
 const packagesService = new PackagesService();
 
 /**
- *  @method             POST
- *  @description        Generate a package quote (not persisted)
- *  @access             private
- */
-router.post('/generate', [authMiddleware], async (req: Request, res: Response) => {
-    const userId = req.user!.id;
-    const { destinationId, poiIds, currency, name, description } = req.body as {
-        destinationId: string;
-        poiIds: string[];
-        currency?: string;
-        name?: string;
-        description?: string;
-    };
-    const quote = await packagesService.generate({ userId, destinationId, poiIds, currency, name, description });
-    res.send(quote);
-});
-
-/**
- *  @method             POST
- *  @description        Persist a package under current user (click Done flow)
- *  @access             private
- */
-router.post('/', [authMiddleware], async (req: Request, res: Response) => {
-    const userId = req.user!.id;
-    const { destination_id, name, description, poi_ids, breakdown, currency, is_active, priority } = req.body;
-    const pkg = await packagesService.create({
-        user_id: userId,
-        destination_id,
-        name,
-        description,
-        poi_ids,
-        breakdown,
-        currency,
-        is_active,
-        priority,
-    });
-    res.send(pkg);
-});
-
-/**
  *  @method             GET
- *  @description        List current user's packages
- *  @access             private
+ *  @description        Get all packages
+ *  @access             protected
  */
-router.get('/', [authMiddleware], async (req: Request, res: Response) => {
-    const userId = req.user!.id;
-    const packages = await packagesService.getAll({ userId });
+router.get('/', [authMiddleware], async (_req: Request, res: Response) => {
+    const packages = await packagesService.getAll();
     res.send(packages);
 });
 
 /**
+ *  @method             POST
+ *  @description        Create a new package
+ *  @access             protected (admin)
+ */
+router.post('/', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+    const { name, description, duration_days, base_price, user_id, is_custom, is_active } = req.body;
+    const created = await packagesService.create({
+        name,
+        description,
+        duration_days,
+        base_price,
+        user_id,
+        is_custom,
+        is_active,
+    });
+    res.send(created);
+});
+
+/**
  *  @method             GET
- *  @description        Get a package by ID (current user)
- *  @access             private
+ *  @description        Get a package by ID
+ *  @access             protected
  */
 router.get('/:packageId', [authMiddleware], async (req: Request, res: Response) => {
-    const userId = req.user!.id;
     const { packageId } = req.params;
-    const pkg = await packagesService.getById({ userId, packageId });
+    const pkg = await packagesService.getById({ packageId });
     res.send(pkg);
 });
 
 /**
  *  @method             PATCH
- *  @description        Update a package (current user)
- *  @access             private
+ *  @description        Update a package by ID
+ *  @access             protected (admin)
  */
-router.patch('/:packageId', [authMiddleware], async (req: Request, res: Response) => {
-    const userId = req.user!.id;
+router.patch('/:packageId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
     const { packageId } = req.params;
-    const update = req.body;
-    const pkg = await packagesService.update({ userId, packageId, update });
-    res.send(pkg);
+    const { name, description, duration_days, base_price, user_id, is_custom, is_active } = req.body;
+
+    const updated = await packagesService.update(packageId, {
+        name,
+        description,
+        duration_days,
+        base_price,
+        user_id,
+        is_custom,
+        is_active,
+    });
+
+    res.send(updated);
 });
 
 /**
  *  @method             DELETE
- *  @description        Delete a package (current user)
- *  @access             private
+ *  @description        Delete a package by ID
+ *  @access             protected (admin)
  */
-router.delete('/:packageId', [authMiddleware], async (req: Request, res: Response) => {
-    const userId = req.user!.id;
+router.delete('/:packageId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
     const { packageId } = req.params;
-    const result = await packagesService.delete({ userId, packageId });
-    res.send(result);
+    await packagesService.delete({ packageId });
+    res.send({ success: true });
 });
 
 export default router;

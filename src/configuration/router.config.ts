@@ -6,7 +6,8 @@ import destionRoutes from '../routes/destination.routes';
 import guideBookingRoutes from '../routes/guide-booking.routes';
 import guideRoutes from '../routes/guide.routes';
 import healthRoutes from '../routes/health.routes';
-import packageRoutes from '../routes/package.routes';
+
+import packageComponentsRoutes from '../routes/package-components.routes';
 import poiCategoryRoutes from '../routes/poi-catergory.routes';
 import poiRatingRoutes from '../routes/poi-rating.routes';
 import poiWishlistRoutes from '../routes/poi-wishist.routes';
@@ -20,6 +21,8 @@ import weatherRoutes from '../routes/weather.routes';
 import activityCategoryRoutes from '../routes/activity-category.routes';
 import activityRoutes from '../routes/activity.routes';
 import activityBookingRoutes from '../routes/activity-booking.routes';
+import packagesRoutes from '../routes/package.routes';
+import packageComponentRoutes from '../routes/package-components.routes';
 
 export const initRouter = (app: Express) => {
     app.use('/api/v1/health', healthRoutes);
@@ -28,7 +31,10 @@ export const initRouter = (app: Express) => {
     app.use('/api/v1/destinations', destionRoutes);
     app.use('/api/v1/destinations/:destinationId/weather', weatherRoutes);
     app.use('/api/v1/destinations/:destinationId/pois', poiRoutes);
-    app.use('/api/v1/packages', packageRoutes);
+    app.use('/api/v1/packages', packagesRoutes);
+    app.use('/api/v1/packages/:packageId/components', packageComponentRoutes);
+
+    app.use('/api/v1/packages/:packageId/components', packageComponentsRoutes);
     app.use('/api/v1/destinations/:destinationId/pois/:poiId/ratings', poiRatingRoutes);
     app.use('/api/v1/destinations/:destinationId/pois/:poiId/wishlist', poiWishlistRoutes);
     app.use('/api/v1/poi-categories', poiCategoryRoutes);
