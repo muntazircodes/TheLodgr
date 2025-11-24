@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextFunction, Request, Response } from 'express';
-import { UnauthorizedError } from '@hyperflake/http-errors';
 import { AuthService } from '../services/auth.service';
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
