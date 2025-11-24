@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import adminAuthMiddleWare from '../middlewares/have-access.middleware';
+import haveAccess from '../middlewares/have-access.middleware';
 import { DestinationService } from '../services/destination.service';
 
 const router = Router();
@@ -21,7 +21,7 @@ router.get('/', [authMiddleware], async (req: Request, res: Response) => {
  *  @description        Create a new destination
  *  @access             protected
  */
-router.post('/', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.post('/', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { name, slug, area, metadata } = req.body;
     const destination = await destinationService.create({ name, slug, area, metadata });
     res.send(destination);
@@ -43,7 +43,7 @@ router.get('/:destinationId', [authMiddleware], async (req: Request, res: Respon
  *  @description        Update a destination by ID
  *  @access             protected
  */
-router.patch('/:destinationId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.patch('/:destinationId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
     const { name, slug, area, metadata } = req.body;
 
@@ -56,7 +56,7 @@ router.patch('/:destinationId', [authMiddleware, adminAuthMiddleWare], async (re
  *  @description        Delete a destination by ID
  *  @access             protected
  */
-router.delete('/:destinationId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.delete('/:destinationId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { destinationId } = req.params;
     const destination = await destinationService.delete({ destinationId });
     res.send(destination);

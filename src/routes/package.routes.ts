@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import adminAuthMiddleWare from '../middlewares/have-access.middleware';
+import haveAccess from '../middlewares/have-access.middleware';
 import { PackagesService } from '../services/packages.service';
 
 const router = Router();
@@ -21,7 +21,7 @@ router.get('/', [authMiddleware], async (_req: Request, res: Response) => {
  *  @description        Create a new package
  *  @access             protected (admin)
  */
-router.post('/', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.post('/', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { name, description, duration_days, base_price, user_id, is_custom, is_active } = req.body;
     const created = await packagesService.create({
         name,
@@ -51,7 +51,7 @@ router.get('/:packageId', [authMiddleware], async (req: Request, res: Response) 
  *  @description        Update a package by ID
  *  @access             protected (admin)
  */
-router.patch('/:packageId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.patch('/:packageId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { packageId } = req.params;
     const { name, description, duration_days, base_price, user_id, is_custom, is_active } = req.body;
 
@@ -73,7 +73,7 @@ router.patch('/:packageId', [authMiddleware, adminAuthMiddleWare], async (req: R
  *  @description        Delete a package by ID
  *  @access             protected (admin)
  */
-router.delete('/:packageId', [authMiddleware, adminAuthMiddleWare], async (req: Request, res: Response) => {
+router.delete('/:packageId', [authMiddleware, haveAccess], async (req: Request, res: Response) => {
     const { packageId } = req.params;
     await packagesService.delete({ packageId });
     res.send({ success: true });
